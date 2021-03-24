@@ -4,8 +4,13 @@ from getopt import getopt
 import sys
 from parse_modes_VASP import parse_modes_VASP
 
-def displace_along_modes(poscar,outcar,scale):
+def displace_along_modes(poscar,outcar,scale,**args):
     modes,mode_types=parse_modes_VASP(outcar)
+    if 'mode_nums' in args:
+        modes_to_use=args['mode_nums']
+    else:
+        modes_to_use=[i for i in range(len(mode_types))]
+        
     try:
         lv,coord,atomtypes,atomnums,seldyn=parse_poscar(poscar)
     except ValueError:
@@ -13,7 +18,7 @@ def displace_along_modes(poscar,outcar,scale):
         seldyn=0
         
     for i in range(len(modes)):
-        if mode_types[i]=='imaginary':
+        if mode_types[i]=='imaginary' and i in modes_to_use:
             coord+=modes[i]*scale
     if seldyn==0:
         write_poscar('./POSCAR_disp',lv,coord,atomtypes,atomnums)
